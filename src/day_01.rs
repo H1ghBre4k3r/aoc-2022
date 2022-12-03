@@ -1,20 +1,36 @@
-use aoc_runner_derive::aoc;
+use aoc_runner_derive::{aoc, aoc_generator};
 
-#[aoc(day1, part1)]
-pub fn day01_part1(inp: &str) -> i64 {
-    let mut max = 0;
-    let mut cur_max = 0;
-    for ele in inp.lines() {
-        if ele == "" {
-            if cur_max > max {
-                max = cur_max
-            }
-            cur_max = 0;
+type Elve = i64;
+
+#[aoc_generator(day01)]
+fn generator_day01(inp: &str) -> Vec<Elve> {
+    let mut elves = vec![];
+    let mut current_elve = 0;
+    for val in inp.lines() {
+        if val.trim() == "" {
+            elves.push(current_elve);
+            current_elve = 0;
             continue;
         }
-        cur_max += ele.parse::<i64>().unwrap();
+        current_elve += val.parse::<i64>().unwrap();
     }
-    max
+    elves.push(current_elve);
+    elves
+}
+
+#[aoc(day1, part1)]
+pub fn day01_part1(elves: &[Elve]) -> i64 {
+    let mut elves = elves.to_vec();
+    elves.sort();
+    *elves.last().unwrap()
+}
+
+#[aoc(day1, part2)]
+pub fn day01_part2(elves: &[Elve]) -> i64 {
+    let mut elves = elves.to_vec();
+    elves.sort();
+    let last_three_elves = elves.split_off(elves.len() - 3);
+    last_three_elves.iter().fold(0, |memo, elve| memo + elve)
 }
 
 #[cfg(test)]
@@ -23,9 +39,8 @@ mod test {
 
     #[test]
     fn test_part_1() {
-        assert_eq!(
-            day01_part1(
-                "1000
+        let elves = generator_day01(
+            "1000
 2000
 3000
 
@@ -38,9 +53,29 @@ mod test {
 8000
 9000
 
-10000"
-            ),
-            24000
-        )
+10000",
+        );
+        assert_eq!(day01_part1(&elves), 24000)
+    }
+
+    #[test]
+    fn test_part_2() {
+        let elves = generator_day01(
+            "1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000",
+        );
+        assert_eq!(day01_part2(&elves), 45000)
     }
 }
