@@ -16,13 +16,13 @@ enum Outcome {
 }
 
 impl Hand {
-    /// Parse the input into a valid hand, or None if input is not a valid hand.
-    fn from_code(code: &str) -> Option<Hand> {
+    /// Parse the input into a valid hand.
+    fn from_code(code: &str) -> Hand {
         match code {
-            "A" | "X" => Some(Self::Rock),
-            "B" | "Y" => Some(Self::Paper),
-            "C" | "Z" => Some(Self::Scissor),
-            _ => None,
+            "A" | "X" => Self::Rock,
+            "B" | "Y" => Self::Paper,
+            "C" | "Z" => Self::Scissor,
+            _ => unreachable!(),
         }
     }
 
@@ -39,20 +39,45 @@ impl Hand {
         }
     }
 
+    /// Get the hand that would result in the specified outcome if played against this hand.
+    fn with_coutcome_against_this(&self, outcome: Outcome) -> Hand {
+        match (*self, outcome) {
+            (Hand::Rock, Outcome::Draw)
+            | (Hand::Scissor, Outcome::Win)
+            | (Hand::Paper, Outcome::Loose) => Self::Rock,
+            (Hand::Paper, Outcome::Draw)
+            | (Hand::Rock, Outcome::Win)
+            | (Hand::Scissor, Outcome::Loose) => Self::Paper,
+            (Hand::Scissor, Outcome::Draw)
+            | (Hand::Paper, Outcome::Win)
+            | (Hand::Rock, Outcome::Loose) => Self::Scissor,
+        }
+    }
+
     fn val(self) -> i64 {
         self as i64
     }
 }
 
 impl Outcome {
+    /// Parse the input into a valid outcome.
+    fn from_code(code: &str) -> Self {
+        match code {
+            "X" => Self::Loose,
+            "Y" => Self::Draw,
+            "Z" => Self::Win,
+            _ => unreachable!(),
+        }
+    }
+
     fn val(self) -> i64 {
         self as i64
     }
 }
 
 /// Convert the sample input into a valid vector of hands.
-#[aoc_generator(day2)]
-fn generator_day02(inp: &str) -> Vec<(Hand, Hand)> {
+#[aoc_generator(day2, part1)]
+fn generator_day02_part1(inp: &str) -> Vec<(Hand, Hand)> {
     let mut hands = vec![];
 
     for line in inp.lines() {
@@ -61,13 +86,27 @@ fn generator_day02(inp: &str) -> Vec<(Hand, Hand)> {
         // But since I do not care enough for safety in AOC...LUL
         let enemy = coded_hands.next().unwrap();
         let we = coded_hands.next().unwrap();
-        hands.push((
-            Hand::from_code(enemy).unwrap(),
-            Hand::from_code(we).unwrap(),
-        ));
+        hands.push((Hand::from_code(enemy), Hand::from_code(we)));
     }
 
     hands
+}
+
+/// Conver the sample input into a vector containing the hand of the enemy and the desired outcome.
+#[aoc_generator(day2, part2)]
+fn generator_day02_part2(inp: &str) -> Vec<(Hand, Outcome)> {
+    let mut rounds = vec![];
+
+    for line in inp.lines() {
+        let mut coded_rounds = line.split_whitespace();
+        // Note: This is highly unsafe and not recommended in production
+        // But since I do not care enough for safety in AOC...LUL
+        let enemy = coded_rounds.next().unwrap();
+        let outcome = coded_rounds.next().unwrap();
+        rounds.push((Hand::from_code(enemy), Outcome::from_code(outcome)));
+    }
+
+    rounds
 }
 
 #[aoc(day2, part1)]
@@ -76,6 +115,20 @@ fn day02_part1(hands: &[(Hand, Hand)]) -> i64 {
         let (enemy, we) = hands;
         score + we.val() + we.beats(*enemy).val()
     })
+}
+
+#[aoc(day2, part2)]
+fn day02_part2(rounds: &[(Hand, Outcome)]) -> i64 {
+    rounds
+        .iter()
+        .map(|round| {
+            let (enemy, outcome) = round;
+            (enemy, enemy.with_coutcome_against_this(*outcome))
+        })
+        .fold(0, |score, hands| {
+            let (enemy, we) = hands;
+            score + we.val() + we.beats(*enemy).val()
+        })
 }
 
 #[cfg(test)]
@@ -102,8 +155,50 @@ C Z";
     }
 
     #[test]
-    fn test_generator() {
-        let hands = generator_day02(INPUT);
+    fn test_hand_with_outcome_against_this() {
+        assert_eq!(
+            Hand::Rock.with_coutcome_against_this(Outcome::Draw),
+            Hand::Rock
+        );
+        assert_eq!(
+            Hand::Paper.with_coutcome_against_this(Outcome::Draw),
+            Hand::Paper
+        );
+        assert_eq!(
+            Hand::Scissor.with_coutcome_against_this(Outcome::Draw),
+            Hand::Scissor
+        );
+
+        assert_eq!(
+            Hand::Rock.with_coutcome_against_this(Outcome::Win),
+            Hand::Paper
+        );
+        assert_eq!(
+            Hand::Paper.with_coutcome_against_this(Outcome::Win),
+            Hand::Scissor
+        );
+        assert_eq!(
+            Hand::Scissor.with_coutcome_against_this(Outcome::Win),
+            Hand::Rock
+        );
+
+        assert_eq!(
+            Hand::Rock.with_coutcome_against_this(Outcome::Loose),
+            Hand::Scissor
+        );
+        assert_eq!(
+            Hand::Scissor.with_coutcome_against_this(Outcome::Loose),
+            Hand::Paper
+        );
+        assert_eq!(
+            Hand::Paper.with_coutcome_against_this(Outcome::Loose),
+            Hand::Rock
+        );
+    }
+
+    #[test]
+    fn test_generator_part1() {
+        let hands = generator_day02_part1(INPUT);
         assert_eq!(
             hands,
             vec![
@@ -115,8 +210,27 @@ C Z";
     }
 
     #[test]
-    fn test_day01_part1() {
-        let hands = generator_day02(INPUT);
+    fn test_generator_part2() {
+        let rounds = generator_day02_part2(INPUT);
+        assert_eq!(
+            rounds,
+            vec![
+                (Hand::Rock, Outcome::Draw),
+                (Hand::Paper, Outcome::Loose),
+                (Hand::Scissor, Outcome::Win)
+            ]
+        );
+    }
+
+    #[test]
+    fn test_day02_part1() {
+        let hands = generator_day02_part1(INPUT);
         assert_eq!(day02_part1(&hands), 15);
+    }
+
+    #[test]
+    fn test_day02_part2() {
+        let rounds = generator_day02_part2(INPUT);
+        assert_eq!(day02_part2(&rounds), 12);
     }
 }

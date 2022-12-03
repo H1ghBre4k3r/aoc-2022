@@ -34,7 +34,7 @@ pub fn day01_part2(elves: &[Elve]) -> i64 {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
