@@ -30,7 +30,7 @@ pub fn day01_part2(elves: &[Elve]) -> i64 {
     let mut elves = elves.to_vec();
     elves.sort();
     let last_three_elves = elves.split_off(elves.len() - 3);
-    last_three_elves.iter().fold(0, |memo, elve| memo + elve)
+    last_three_elves.iter().sum()
 }
 
 #[cfg(test)]
