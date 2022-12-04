@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use aoc_runner_derive::aoc_generator;
+use aoc_runner_derive::{aoc, aoc_generator};
 
 /// A struct representing a rucksack with two compartements.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -9,7 +9,7 @@ struct Rucksack(String, String);
 impl Rucksack {
     /// Find all elements which are in both compartements.
     pub fn find_duplicates(&self) -> Vec<char> {
-        let mut duplicates = vec![];
+        let mut duplicates = HashSet::new();
 
         let mut chars_set = HashSet::new();
         for c in self.0.chars() {
@@ -18,10 +18,10 @@ impl Rucksack {
 
         for c in self.1.chars() {
             if chars_set.get(&c).is_some() {
-                duplicates.push(c);
+                duplicates.insert(c);
             }
         }
-        duplicates
+        duplicates.into_iter().collect()
     }
 }
 
@@ -33,6 +33,26 @@ fn generator_day03(inp: &str) -> Vec<Rucksack> {
         rucksacks.push(Rucksack(left.to_string(), right.to_string()));
     }
     rucksacks
+}
+
+#[aoc(day3, part1)]
+fn day03_part1(rucksacks: &[Rucksack]) -> u32 {
+    rucksacks
+        .iter()
+        .map(|rucksack| {
+            rucksack
+                .find_duplicates()
+                .iter()
+                .map(|elem| {
+                    if *elem >= 'a' && *elem <= 'z' {
+                        *elem as u32 - 'a' as u32 + 1
+                    } else {
+                        *elem as u32 - 'A' as u32 + 27
+                    }
+                })
+                .sum::<u32>()
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -75,5 +95,11 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
             Rucksack("abcdaaa".to_string(), "ABCD".to_string()).find_duplicates(),
             vec![]
         );
+    }
+
+    #[test]
+    fn test_day03_part1() {
+        let rucksacks = generator_day03(INPUT);
+        assert_eq!(day03_part1(&rucksacks), 157);
     }
 }
