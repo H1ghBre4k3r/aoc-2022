@@ -16,7 +16,7 @@ trait Priority {
 
 impl Priority for char {
     fn to_prio(self) -> u32 {
-        if self >= 'a' && self <= 'z' {
+        if ('a'..='z').contains(&self) {
             self as u32 - 'a' as u32 + 1
         } else {
             self as u32 - 'A' as u32 + 27
