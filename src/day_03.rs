@@ -187,8 +187,8 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
     #[test]
     fn test_rucksack_find_duplicates() {
         assert_eq!(
-            Rucksack("abcde".to_string(), "ABcDe".to_string()).find_duplicates(),
-            vec!['c', 'e']
+            Rucksack("abcde".to_string(), "ABcDE".to_string()).find_duplicates(),
+            vec!['c']
         );
         assert_eq!(
             Rucksack("abcdaaa".to_string(), "ABCD".to_string()).find_duplicates(),
