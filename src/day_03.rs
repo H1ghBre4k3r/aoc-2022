@@ -1,7 +1,29 @@
+use std::collections::HashSet;
+
 use aoc_runner_derive::aoc_generator;
 
+/// A struct representing a rucksack with two compartements.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Rucksack(String, String);
+
+impl Rucksack {
+    /// Find all elements which are in both compartements.
+    pub fn find_duplicates(&self) -> Vec<char> {
+        let mut duplicates = vec![];
+
+        let mut chars_set = HashSet::new();
+        for c in self.0.chars() {
+            chars_set.insert(c);
+        }
+
+        for c in self.1.chars() {
+            if chars_set.get(&c).is_some() {
+                duplicates.push(c);
+            }
+        }
+        duplicates
+    }
+}
 
 #[aoc_generator(day3)]
 fn generator_day03(inp: &str) -> Vec<Rucksack> {
@@ -40,6 +62,18 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
                 Rucksack("ttgJtRGJ".to_string(), "QctTZtZT".to_string()),
                 Rucksack("CrZsJsPPZsGz".to_string(), "wwsLwLmpwMDw".to_string())
             ]
-        )
+        );
+    }
+
+    #[test]
+    fn test_find_duplicates() {
+        assert_eq!(
+            Rucksack("abcde".to_string(), "ABcDe".to_string()).find_duplicates(),
+            vec!['c', 'e']
+        );
+        assert_eq!(
+            Rucksack("abcdaaa".to_string(), "ABCD".to_string()).find_duplicates(),
+            vec![]
+        );
     }
 }
