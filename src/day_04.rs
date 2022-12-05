@@ -20,6 +20,11 @@ impl Section {
     fn contains_section(&self, other: &Section) -> bool {
         self.0 <= other.0 && self.1 >= other.1
     }
+
+    /// Check, whether this section overlaps with another specified section.
+    fn overlaps_with(&self, other: &Section) -> bool {
+        self.0 >= self.1 || self.1 >= other.0
+    }
 }
 
 /// Parse input into pairs of sections.
@@ -99,5 +104,13 @@ mod tests {
     fn test_day04_part1() {
         let sections = generator_day04(INPUT);
         assert_eq!(day04_part1(&sections), 2);
+    }
+
+    #[test]
+    fn test_section_overlaps_with() {
+        assert!(Section(1, 3).overlaps_with(&Section(3, 5)));
+        assert!(Section(3, 5).overlaps_with(&Section(1, 3)));
+        assert!(Section(1, 3).overlaps_with(&Section(1, 3)));
+        assert!(!Section(1, 3).overlaps_with(&Section(4, 5)));
     }
 }
