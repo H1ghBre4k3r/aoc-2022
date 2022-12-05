@@ -23,7 +23,7 @@ impl Section {
 
     /// Check, whether this section overlaps with another specified section.
     fn overlaps_with(&self, other: &Section) -> bool {
-        self.0 >= self.1 || self.1 >= other.0
+        self.1 >= other.0 && self.0 <= other.1
     }
 }
 
@@ -48,6 +48,13 @@ fn day04_part1(sections: &[(Section, Section)]) -> usize {
         } else {
             0
         }
+    })
+}
+
+#[aoc(day4, part2)]
+fn day04_part2(sections: &[(Section, Section)]) -> usize {
+    sections.iter().fold(0, |acc, (left, right)| {
+        acc + if left.overlaps_with(&right) { 1 } else { 0 }
     })
 }
 
@@ -108,9 +115,17 @@ mod tests {
 
     #[test]
     fn test_section_overlaps_with() {
-        assert!(Section(1, 3).overlaps_with(&Section(3, 5)));
-        assert!(Section(3, 5).overlaps_with(&Section(1, 3)));
+        assert!(Section(1, 4).overlaps_with(&Section(2, 5)));
+        assert!(Section(2, 5).overlaps_with(&Section(1, 4)));
         assert!(Section(1, 3).overlaps_with(&Section(1, 3)));
+        assert!(Section(1, 5).overlaps_with(&Section(2, 4)));
+        assert!(Section(2, 4).overlaps_with(&Section(1, 5)));
         assert!(!Section(1, 3).overlaps_with(&Section(4, 5)));
+    }
+
+    #[test]
+    fn test_day04_part2() {
+        let sections = generator_day04(INPUT);
+        assert_eq!(day04_part2(&sections), 4);
     }
 }
