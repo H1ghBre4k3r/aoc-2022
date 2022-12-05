@@ -15,6 +15,11 @@ impl Section {
             right.parse::<usize>().expect("Input is no real number"),
         )
     }
+
+    /// Check, whether this section contains another specified section.
+    fn contains_section(&self, other: &Section) -> bool {
+        self.0 <= other.0 && self.1 >= other.1
+    }
 }
 
 /// Parse input into pairs of sections.
@@ -71,5 +76,11 @@ mod tests {
                 (Section(2, 6), Section(4, 8))
             ]
         );
+    }
+
+    #[test]
+    fn test_section_contains_section() {
+        assert!(Section(2, 8).contains_section(&Section(3, 5)));
+        assert!(!Section(3, 6).contains_section(&Section(3, 7)));
     }
 }
