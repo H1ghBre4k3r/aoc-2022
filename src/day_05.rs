@@ -27,12 +27,30 @@ struct Stack {
 }
 
 impl Stack {
+    /// Push an element onto this stack.
     pub fn push(&mut self, item: Item) {
         self.items.push(item);
     }
 
+    /// Pop an element from this stack.
     pub fn pop(&mut self) -> Option<Item> {
         self.items.pop()
+    }
+
+    /// Pop n elements of this stack.
+    pub fn pop_n(&mut self, n: usize) -> Vec<Option<Item>> {
+        let mut items = vec![];
+
+        for _ in 0..n {
+            items.insert(0, self.items.pop());
+        }
+
+        items
+    }
+
+    /// Push all provided elements into this stack.
+    pub fn push_all(&mut self, items: Vec<Item>) {
+        self.items.append(&mut items.clone());
     }
 }
 
@@ -146,6 +164,34 @@ fn day05_part1(input: &(Vec<Stack>, Vec<Instruction>)) -> String {
         })
 }
 
+#[aoc(day5, part2)]
+fn day05_part2(input: &(Vec<Stack>, Vec<Instruction>)) -> String {
+    let (mut stacks, instructions) = input.clone();
+
+    // move crates around
+    for Instruction(amount, source, target) in instructions {
+        let items = stacks[source - 1].pop_n(amount);
+        stacks[target - 1].push_all(
+            items
+                .into_iter()
+                .filter(|item| item.is_some())
+                .map(|item| item.unwrap())
+                .collect(),
+        );
+    }
+
+    // combine top elements
+    stacks
+        .iter_mut()
+        .map(|stack| stack.pop())
+        .fold("".to_owned(), |mut memo, current| {
+            if let Some(c) = current {
+                memo.push(c.0);
+            }
+            memo
+        })
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -189,6 +235,23 @@ move 1 from 1 to 2";
     }
 
     #[test]
+    fn test_pop_n() {
+        let mut stack = Stack {
+            items: vec![Item('A'), Item('B')],
+        };
+        let items = stack.pop_n(2);
+        assert_eq!(items, vec![Some(Item('A')), Some(Item('B'))]);
+        assert!(stack.items.len() == 0);
+    }
+
+    #[test]
+    fn test_push_n() {
+        let mut stack = Stack::default();
+        stack.push_all(vec![Item('A'), Item('B')]);
+        assert_eq!(stack.items, vec![Item('A'), Item('B')]);
+    }
+
+    #[test]
     fn test_generator_day5() {
         let stacks = generator_day5(INPUT);
         assert_eq!(
@@ -227,5 +290,11 @@ move 1 from 1 to 2";
     fn test_day05_part1() {
         let generated = generator_day5(INPUT);
         assert_eq!(day05_part1(&generated), "CMZ".to_string());
+    }
+
+    #[test]
+    fn test_day06_part2() {
+        let generated = generator_day5(INPUT);
+        assert_eq!(day05_part2(&generated), "MCD".to_string());
     }
 }
